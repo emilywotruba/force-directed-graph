@@ -1,19 +1,19 @@
 nodes:
   - id: 0
     color: red
-    name: "zero"
+    name: zero
   - id: 1
-    color: red
-    name: "one"
+    color: green
+    name: one
   - id: 2
-    color: red
-    name: "two"
+    color: blue
+    name: two
   - id: 3
-    color: red
-    name: "three"
+    color: cyan
+    name: three
   - id: 4
-    color: red
-    name: "four"
+    color: yellow
+    name: four
 edges:
   - [0, 1]
   - [0, 2]
