@@ -17,9 +17,27 @@ class Line:
     node_to: int
     canvas_id: int
 
-adj_matrix = []
-
+# input file
 fname = "example_in/input1.txt"
+
+# mass
+alpha = 1.0
+beta = .0001
+spring_characteristic = 1.0
+
+#damping
+eta = .99
+delta_t = .01
+
+# canvas
+root = tkinter.Tk()
+canvas = tkinter.Canvas(root, width=2000, height=2000, background="#FFFFFF")
+canvas.pack()
+
+# graph
+adj_matrix = []
+nodes = []
+lines = []
 
 def graph_input(nodes, edges, lists=[]):
     adj_matrix = []
@@ -43,35 +61,6 @@ def graph_input(nodes, edges, lists=[]):
 
     return adj_matrix
 
-with open(fname) as f:
-    lines = f.read().split()
-    lines = [int(i) for i in lines]
-    print(lines)
-
-    nodes = lines[0]
-    edges = lines[1]
-
-    print(f"no of nodes = {nodes}")
-    print(f"no of edges = {edges}")
-
-    adj_matrix = graph_input(nodes, edges, lines)
-
-# mass
-alpha = 1.0
-beta = .0001
-spring_characteristic = 1.0
-
-#damping
-eta = .99
-delta_t = .01
-
-root = tkinter.Tk()
-canvas = tkinter.Canvas(root, width=2000, height=2000, background="#FFFFFF")
-canvas.pack()
-
-nodes = []
-lines = []
-
 
 def move_nodes():
     for node in nodes:
@@ -84,13 +73,6 @@ def move_nodes():
         )
 
 
-for i in range(len(adj_matrix)):
-    nodes.append(Node(
-        coords=(random.random(), random.random()),
-        velocity=(0.0, 0.0),
-        canvas_id=canvas.create_oval(0, 0, 0, 0, fill="red")
-    ))
-
 def move_lines():
     for line in lines:
         canvas.coords(
@@ -100,15 +82,6 @@ def move_lines():
             int(nodes[line.node_to].coords[0] * 500),
             int(nodes[line.node_to].coords[1] * 500)
         )
-
-for i in range(len(adj_matrix)):
-    for j in range(len(adj_matrix)):
-        if adj_matrix[i][j] != 0: # i.e the line an edge exists
-            lines.append(Line(
-                    node_from=i,
-                    node_to=j,
-                    canvas_id=canvas.create_line(0, 0, 0, 0)
-            ))
 
 
 def coulomb_force(coords_i, coords_j):  #repulsive force
@@ -170,5 +143,33 @@ def move():
 
     root.after(1, move)
 
-root.after(1, move)
-root.mainloop()
+
+if __name__ == '__main__':
+    with open(fname) as f:
+        # parse input
+        lines_in = f.read().split()
+        lines_in = [int(i) for i in lines_in]
+
+        adj_matrix = graph_input(lines_in[0], lines_in[1], lines_in)
+
+        # draw nodes
+        for i in range(len(adj_matrix)):
+            nodes.append(Node(
+                coords=(random.random(), random.random()),
+                velocity=(0.0, 0.0),
+                canvas_id=canvas.create_oval(0, 0, 0, 0, fill="red")
+            ))
+
+        # draw lines
+        for i in range(len(adj_matrix)):
+            for j in range(len(adj_matrix)):
+                if adj_matrix[i][j] != 0: # i.e the line an edge exists
+                    lines.append(Line(
+                            node_from=i,
+                            node_to=j,
+                            canvas_id=canvas.create_line(0, 0, 0, 0)
+                    ))
+
+        # begin canvas main loop
+        root.after(1, move)
+        root.mainloop()
