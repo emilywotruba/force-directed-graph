@@ -67,7 +67,7 @@ def graph_input(nodes, edges):
 
 
 def move_nodes():
-    for node in nodes:
+    for node in filter(lambda x: x is not None, nodes):
         canvas.coords(
             node.canvas_id,
             int(node.coords[0] * 500 - 5),
@@ -83,7 +83,7 @@ def move_nodes():
 
 
 def move_lines():
-    for line in lines:
+    for line in filter(lambda x: x is not None, lines):
         canvas.coords(
             line.canvas_id,
             int(nodes[line.node_from].coords[0] * 500),
@@ -162,7 +162,7 @@ if __name__ == '__main__':
             adj_matrix = graph_input(yml["nodes"], yml["edges"])
 
             # draw nodes
-            nodes = [None for i in range(len(yml["nodes"]))]
+            nodes = [None for i in range(max([node["id"] for node in yml["nodes"]])+1)]
             for node in yml["nodes"]:
                 nodes[node["id"]] = Node(
                     coords=(random.random(), random.random()),
