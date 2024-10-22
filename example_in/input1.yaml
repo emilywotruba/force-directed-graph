@@ -1,0 +1,21 @@
+nodes:
+  - id: 0
+    color: red
+    name: "zero"
+  - id: 1
+    color: red
+    name: "one"
+  - id: 2
+    color: red
+    name: "two"
+  - id: 3
+    color: red
+    name: "three"
+  - id: 4
+    color: red
+    name: "four"
+edges:
+  - [0, 1]
+  - [0, 2]
+  - [2, 3]
+  - [3, 4]

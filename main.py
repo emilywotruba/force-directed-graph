@@ -3,6 +3,7 @@ import random
 import math
 from dataclasses import dataclass
 from typing import Tuple
+import yaml
 
 
 @dataclass
@@ -10,6 +11,7 @@ class Node:
     coords: Tuple[int, int]
     velocity: Tuple[float, float]
     canvas_id: int
+    label_canvas_id: int
 
 @dataclass
 class Line:
@@ -18,7 +20,7 @@ class Line:
     canvas_id: int
 
 # input file
-fname = "example_in/input1.txt"
+fname = "example_in/input1.yaml"
 
 # mass
 alpha = 1.0
@@ -39,24 +41,24 @@ adj_matrix = []
 nodes = []
 lines = []
 
-def graph_input(nodes, edges, lists=[]):
+def graph_input(nodes, edges):
     adj_matrix = []
 
-    for i in range(nodes):
+    for i in range(len(nodes)):
         temp = []
-        for j in range(nodes):
+        for j in range(len(nodes)):
             temp.append(0)
         adj_matrix.append(temp)
 
-    for i in range(2, (edges * 2 + 2), 2):
-        u = lists[i]
-        v = lists[i + 1]
+    for i in range(0, len(edges)):
+        u = edges[i][0]
+        v = edges[i][1]
         print(f"i = {i}, u = {u}, v = {v}")
 
         adj_matrix[v][u] = adj_matrix[u][v] = 0.1
 
     print("adjacency matrix is : ")
-    for i in range(nodes):
+    for i in range(len(nodes)):
         print(adj_matrix[i])
 
     return adj_matrix
@@ -70,6 +72,11 @@ def move_nodes():
             int(node.coords[1] * 500 - 5),
             int(node.coords[0] * 500 + 5),
             int(node.coords[1] * 500 + 5)
+        )
+        canvas.coords(
+            node.label_canvas_id,
+            int(node.coords[0] * 500),
+            int(node.coords[1] * 500 + 10)
         )
 
 
@@ -146,30 +153,31 @@ def move():
 
 if __name__ == '__main__':
     with open(fname) as f:
-        # parse input
-        lines_in = f.read().split()
-        lines_in = [int(i) for i in lines_in]
+        try:
+            # parse yaml
+            yml = yaml.safe_load(f)
+            adj_matrix = graph_input(yml["nodes"], yml["edges"])
 
-        adj_matrix = graph_input(lines_in[0], lines_in[1], lines_in)
+            # draw nodes
+            nodes = [None for i in range(len(yml["nodes"]))]
+            for node in yml["nodes"]:
+                nodes[node["id"]] = Node(
+                    coords=(random.random(), random.random()),
+                    velocity=(0.0, 0.0),
+                    canvas_id=canvas.create_oval(0, 0, 0, 0, fill=node["color"]),
+                    label_canvas_id=canvas.create_text(0, 0, text=node["name"])
+                )
 
-        # draw nodes
-        for i in range(len(adj_matrix)):
-            nodes.append(Node(
-                coords=(random.random(), random.random()),
-                velocity=(0.0, 0.0),
-                canvas_id=canvas.create_oval(0, 0, 0, 0, fill="red")
-            ))
+            # draw lines
+            for edge in yml["edges"]:
+                lines.append(Line(
+                    node_from=edge[0],
+                    node_to=edge[1],
+                    canvas_id=canvas.create_line(0, 0, 0, 0)
+                ))
 
-        # draw lines
-        for i in range(len(adj_matrix)):
-            for j in range(len(adj_matrix)):
-                if adj_matrix[i][j] != 0: # i.e the line an edge exists
-                    lines.append(Line(
-                            node_from=i,
-                            node_to=j,
-                            canvas_id=canvas.create_line(0, 0, 0, 0)
-                    ))
-
-        # begin canvas main loop
-        root.after(1, move)
-        root.mainloop()
+            # begin canvas main loop
+            root.after(1, move)
+            root.mainloop()
+        except yaml.YAMLError as exc:
+            print(exc)
