@@ -4,6 +4,7 @@ import math
 from dataclasses import dataclass
 from typing import Tuple
 import yaml
+import math
 
 
 @dataclass
@@ -30,6 +31,7 @@ spring_characteristic = 1.0
 #damping
 eta = .99
 delta_t = .01
+wind = 1
 
 # canvas
 root = tkinter.Tk()
@@ -114,9 +116,9 @@ def hooke_force(coords_i, coords_j, adjacency_value): #attractive force
     return [force * distance_x, force * distance_y]
 
 
-def move():
+def move(time):
     e_kinetic = [0.0, 0.0]
-    for i in range(len(adj_matrix)):
+    for i in range(1, len(adj_matrix)):
         force_x = 0.0
         force_y = 0.0
         for j in range(len(adj_matrix)):
@@ -128,6 +130,7 @@ def move():
                     force = hooke_force(nodes[i].coords, nodes[j].coords, adj_matrix[i][j])
                 force_x += force[0]
                 force_y += force[1]
+        force_x = force_x + wind * math.e ** (-time / 100) + wind / 100
         nodes[i].velocity = (
             (nodes[i].velocity[0] + alpha * force_x * delta_t) * eta,
             (nodes[i].velocity[1] + alpha * force_y * delta_t) * eta
@@ -177,7 +180,7 @@ if __name__ == '__main__':
                 ))
 
             # begin canvas main loop
-            root.after(1, move)
+            root.after(1, move, 0)
             root.mainloop()
         except yaml.YAMLError as exc:
             print(exc)
