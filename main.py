@@ -164,8 +164,8 @@ if __name__ == '__main__':
                 nodes[node["id"]] = Node(
                     coords=(random.random(), random.random()),
                     velocity=(0.0, 0.0),
-                    canvas_id=canvas.create_oval(0, 0, 0, 0, fill=node["color"]),
-                    label_canvas_id=canvas.create_text(0, 0, text=node["name"])
+                    canvas_id=canvas.create_oval(0, 0, 0, 0, fill=node.get("color", "red")),
+                    label_canvas_id=canvas.create_text(0, 0, text=node.get("name", str(node["id"])))
                 )
 
             # draw lines
