@@ -1,15 +1,13 @@
 # Force-Directed Graph Drawing
 
-import Tkinter
+import tkinter
 import random
 import math
 
 
 d = []
 
-
-print "Enter file name you want to read from..."
-fname = raw_input()
+fname = "example_in/input1"
 
 def graph_input(nodes, edges, lists=[]):
     V = nodes
@@ -26,14 +24,14 @@ def graph_input(nodes, edges, lists=[]):
     for i in range(2, (E * 2 + 2), 2):
         u = lists[i]
         v = lists[i + 1]
-        print "i = ", i, "u = ", u, "v= ", v
+        print("i = ", i, "u = ", u, "v= ", v)
 
         adj_matrix[v][u] = adj_matrix[u][v] = 0.1
 
-    print "adjacency matrix is : "
+    print("adjacency matrix is : ")
     # print the adjacency matrix
     for i in range(0, V):
-        print adj_matrix[i]
+        print(adj_matrix[i])
 
     return adj_matrix
 
@@ -43,13 +41,13 @@ with open(fname+".txt") as f:
 lines = [int(i) for i in lines]
 
 
-print lines
+print(lines)
 
 nodes = lines[0]
 edges = lines[1]
 
-print "no of nodes = ",nodes
-print "no of edges = ",edges
+print("no of nodes = ", nodes)
+print("no of edges = ", edges)
 
 d = graph_input(nodes, edges,lines)
 
@@ -63,9 +61,9 @@ delta_t = .01
 
 m = len(d)
 
-root = Tkinter.Tk()           #tkinter for creating the front end window
+root = tkinter.Tk()           #tkinter for creating the front end window
 
-canvas = Tkinter.Canvas(root, width=2000, height=2000, background="#FFFFCC")     #creating canvas with given dimension
+canvas = tkinter.Canvas(root, width=2000, height=2000, background="#FFFFCC")     #creating canvas with given dimension
 canvas.pack()
 
 x = []
@@ -81,7 +79,7 @@ def move_oval(i):
 
 #creating a red dot on the canvas
 #http://infohost.nmt.edu/tcc/help/pubs/tkinter/web/create_oval.html
-for i in xrange(m):
+for i in range(m):
     xi = [random.random(), random.random()]
     x.append(xi)
     v.append([0.0, 0.0])
@@ -100,8 +98,8 @@ def move_line(id, xi, xj):
                   int(xj[0] * 500),
                   int(xj[1] * 500))
 
-for i in xrange(m):
-    for j in xrange(m):
+for i in range(m):
+    for j in range(m):
         if d[i][j] != 0:    #i.e the line an edge exists
             id = canvas.create_line(0, 0, 0, 0)
             lids.append(id)
@@ -132,10 +130,10 @@ def Hooke_force(xi, xj, dij): #attractive force
 
 def move():
     ekint = [0.0, 0.0]
-    for i in xrange(m):
+    for i in range(m):
         Fx = 0.0
         Fy = 0.0
-        for j in xrange(m):
+        for j in range(m):
             # if j == 1:
             #     continue
             dij = d[i][j]
@@ -151,7 +149,7 @@ def move():
         ekint[0] = ekint[0] + alpha * (v[i][0] * v[i][0])
         ekint[1] = ekint[1] + alpha * (v[i][1] * v[i][1])
 
-    print ("total kinetic energy: %lf" % math.sqrt(ekint[0] * ekint[0] + ekint[1] * ekint[1]))
+    print("total kinetic energy: %lf" % math.sqrt(ekint[0] * ekint[0] + ekint[1] * ekint[1]))
 
     for i in range(m):
         x[i][0] += v[i][0] * delta_t
