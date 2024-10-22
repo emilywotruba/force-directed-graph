@@ -1,7 +1,21 @@
 import tkinter
 import random
 import math
+from dataclasses import dataclass
+from typing import Tuple
 
+
+@dataclass
+class Node:
+    coords: Tuple[int, int]
+    velocity: Tuple[float, float]
+    canvas_id: int
+
+@dataclass
+class Line:
+    node_from: int
+    node_to: int
+    canvas_id: int
 
 adj_matrix = []
 
@@ -18,10 +32,10 @@ def graph_input(nodes, edges, lists=[]):
 
     for i in range(2, (edges * 2 + 2), 2):
         u = lists[i]
-        node_velocity = lists[i + 1]
-        print(f"i = {i}, u = {u}, node_velocity = {node_velocity}")
+        v = lists[i + 1]
+        print(f"i = {i}, u = {u}, v = {v}")
 
-        adj_matrix[node_velocity][u] = adj_matrix[u][node_velocity] = 0.1
+        adj_matrix[v][u] = adj_matrix[u][v] = 0.1
 
     print("adjacency matrix is : ")
     for i in range(nodes):
@@ -40,7 +54,7 @@ with open(fname) as f:
     print(f"no of nodes = {nodes}")
     print(f"no of edges = {edges}")
 
-    adj_matrix = graph_input(nodes, edges,lines)
+    adj_matrix = graph_input(nodes, edges, lines)
 
 # mass
 alpha = 1.0
@@ -55,50 +69,46 @@ root = tkinter.Tk()
 canvas = tkinter.Canvas(root, width=2000, height=2000, background="#FFFFFF")
 canvas.pack()
 
-node_coords = []
-node_velocity = []
-node_ids = []
+nodes = []
+lines = []
 
 
-def move_oval(i):
-    new_x = int(node_coords[i][0] * 500)
-    new_y = int(node_coords[i][1] * 500)
-    canvas.coords(
-        node_ids[i],
-        new_x - 5,
-        new_y - 5,
-        new_x + 5,
-        new_y + 5
-    )
+def move_nodes():
+    for node in nodes:
+        canvas.coords(
+            node.canvas_id,
+            int(node.coords[0] * 500 - 5),
+            int(node.coords[1] * 500 - 5),
+            int(node.coords[0] * 500 + 5),
+            int(node.coords[1] * 500 + 5)
+        )
 
 
 for i in range(len(adj_matrix)):
-    xi = [random.random(), random.random()]
-    node_coords.append(xi)
-    node_velocity.append([0.0, 0.0])
-    id = canvas.create_oval(245, 245, 255, 255, fill="red")
+    nodes.append(Node(
+        coords=(random.random(), random.random()),
+        velocity=(0.0, 0.0),
+        canvas_id=canvas.create_oval(0, 0, 0, 0, fill="red")
+    ))
 
-    node_ids.append(id)
-    move_oval(i)
-
-line_ids = []
-
-
-def move_line(canvas_id, xi, xj):
-    canvas.coords(
-        canvas_id,
-        int(xi[0] * 500),
-        int(xi[1] * 500),
-        int(xj[0] * 500),
-        int(xj[1] * 500)
-    )
+def move_lines():
+    for line in lines:
+        canvas.coords(
+            line.canvas_id,
+            int(nodes[line.node_from].coords[0] * 500),
+            int(nodes[line.node_from].coords[1] * 500),
+            int(nodes[line.node_to].coords[0] * 500),
+            int(nodes[line.node_to].coords[1] * 500)
+        )
 
 for i in range(len(adj_matrix)):
     for j in range(len(adj_matrix)):
-        if adj_matrix[i][j] != 0:    #i.e the line an edge exists
-            canvas_id = canvas.create_line(0, 0, 0, 0)
-            line_ids.append(canvas_id)
-            move_line(canvas_id, node_coords[i], node_coords[j])
+        if adj_matrix[i][j] != 0: # i.e the line an edge exists
+            lines.append(Line(
+                    node_from=i,
+                    node_to=j,
+                    canvas_id=canvas.create_line(0, 0, 0, 0)
+            ))
 
 
 def coulomb_force(coords_i, coords_j):  #repulsive force
@@ -133,31 +143,30 @@ def move():
             if i != j:
                 force = []
                 if adj_matrix[i][j] == 0.0: # nodes not connected
-                    force = coulomb_force(node_coords[i], node_coords[j])
+                    force = coulomb_force(nodes[i].coords, nodes[j].coords)
                 else:
-                    force = hooke_force(node_coords[i], node_coords[j], adj_matrix[i][j])
+                    force = hooke_force(nodes[i].coords, nodes[j].coords, adj_matrix[i][j])
                 force_x += force[0]
                 force_y += force[1]
-        node_velocity[i][0] = (node_velocity[i][0] + alpha * force_x * delta_t) * eta
-        node_velocity[i][1] = (node_velocity[i][1] + alpha * force_y * delta_t) * eta
-        e_kinetic[0] = e_kinetic[0] + alpha * (node_velocity[i][0] * node_velocity[i][0])
-        e_kinetic[1] = e_kinetic[1] + alpha * (node_velocity[i][1] * node_velocity[i][1])
+        nodes[i].velocity = (
+            (nodes[i].velocity[0] + alpha * force_x * delta_t) * eta,
+            (nodes[i].velocity[1] + alpha * force_y * delta_t) * eta
+        )
+        e_kinetic[0] = e_kinetic[0] + alpha * (nodes[i].velocity[0] ** 2)
+        e_kinetic[1] = e_kinetic[1] + alpha * (nodes[i].velocity[1] ** 2)
 
     e_kinetic_total = math.sqrt(e_kinetic[0] * e_kinetic[0] + e_kinetic[1] * e_kinetic[1])
     print(f"total kinetic energy: {e_kinetic_total}")
+    print(nodes)
 
     for i in range(len(adj_matrix)):
-        node_coords[i][0] += node_velocity[i][0] * delta_t
-        node_coords[i][1] += node_velocity[i][1] * delta_t
-        move_oval(i)
+        nodes[i].coords = (
+            nodes[i].coords[0] + nodes[i].velocity[0] * delta_t,
+            nodes[i].coords[1] + nodes[i].velocity[1] * delta_t
+        )
 
-    line_i = 0
-    for i in range(len(adj_matrix)):
-        for j in range(len(adj_matrix)):
-            if adj_matrix[i][j] != 0:
-                canvas_id = line_ids[line_i]
-                move_line(canvas_id, node_coords[i], node_coords[j])
-                line_i += 1
+    move_nodes()
+    move_lines()
 
     root.after(1, move)
 
