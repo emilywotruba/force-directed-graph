@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import tkinter
 import random
 import math
@@ -5,6 +7,7 @@ from dataclasses import dataclass
 from typing import Tuple
 import yaml
 import math
+import argparse
 
 
 @dataclass
@@ -21,8 +24,8 @@ class Line:
     node_to: int
     canvas_id: int
 
-# input file
-fname = "example_in/input1.yaml"
+# args
+verbose = False
 
 # mass
 alpha = 1.0
@@ -56,13 +59,15 @@ def graph_input(nodes, edges):
     for i in range(0, len(edges)):
         u = edges[i][0]
         v = edges[i][1]
-        print(f"i = {i}, u = {u}, v = {v}")
+        if verbose:
+            print(f"i = {i}, u = {u}, v = {v}")
 
         adj_matrix[v][u] = adj_matrix[u][v] = 0.1
 
-    print("adjacency matrix is : ")
-    for i in range(len(nodes)):
-        print(adj_matrix[i])
+    if verbose:
+        print("adjacency matrix is : ")
+        for i in range(len(nodes)):
+            print(adj_matrix[i])
 
     return adj_matrix
 
@@ -140,9 +145,9 @@ def move(time):
             e_kinetic[0] = e_kinetic[0] + alpha * (nodes[i].velocity[0] ** 2)
             e_kinetic[1] = e_kinetic[1] + alpha * (nodes[i].velocity[1] ** 2)
 
-    e_kinetic_total = math.sqrt(e_kinetic[0] * e_kinetic[0] + e_kinetic[1] * e_kinetic[1])
-    print(f"total kinetic energy: {e_kinetic_total}")
-    print(nodes)
+    if verbose:
+        e_kinetic_total = math.sqrt(e_kinetic[0] * e_kinetic[0] + e_kinetic[1] * e_kinetic[1])
+        print(f"total kinetic energy: {e_kinetic_total}")
 
     for i in range(len(adj_matrix)):
         nodes[i].coords = (
@@ -157,7 +162,25 @@ def move(time):
 
 
 if __name__ == '__main__':
-    with open(fname) as f:
+    parser = argparse.ArgumentParser(
+        prog='fdg-draw',
+        description='Draws a graph using force-directed algorithm using an input yaml file',
+        epilog='For more information, see https://github.com/emilywotruba/force-directed-graph'
+    )
+    parser.add_argument(
+        'filename',
+        type=str,
+        help='Input YAML file'
+    )
+    parser.add_argument(
+        '-v', '--verbose',
+        action='store_true',
+        help='Enable verbose mode'
+    )
+    args = parser.parse_args()
+    if args.verbose:
+        verbose = True
+    with open(args.filename) as f:
         try:
             # parse yaml
             yml = yaml.safe_load(f)
