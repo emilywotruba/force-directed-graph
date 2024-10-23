@@ -1,0 +1,24 @@
+nodes:
+  - id: 0
+    color: red
+    name: zero
+    fixed: true
+    outgoing_edges:
+      - 1
+      - 2
+  - id: 1
+    color: green
+    name: one
+  - id: 2
+    color: blue
+    name: two
+    outgoing_edges:
+      - 3
+  - id: 3
+    color: cyan
+    name: three
+    outgoing_edges:
+      - 4
+  - id: 4
+    color: yellow
+    name: four

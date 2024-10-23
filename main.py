@@ -192,6 +192,20 @@ if __name__ == '__main__':
                     label_canvas_id=canvas.create_text(0, 0, text=node.get("name", str(node["id"]))),
                     fixed=node.get("fixed", False)
                 )
+                for sink in node.get("outgoing_edges", []):
+                    lines.append(Line(
+                        node_from=node["id"],
+                        node_to=sink,
+                        canvas_id=canvas.create_line(0, 0, 0, 0, arrow=tkinter.LAST),
+                        strength=0.1
+                    ))
+                for source in node.get("incoming_edges", []):
+                    lines.append(Line(
+                        node_from=source,
+                        node_to=node["id"],
+                        canvas_id=canvas.create_line(0, 0, 0, 0, arrow=tkinter.LAST),
+                        strength=0.1
+                    ))
 
             # draw lines
             for edge in yml.get("edges", []):
