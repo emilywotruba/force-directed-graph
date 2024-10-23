@@ -23,6 +23,7 @@ class Line:
     node_from: int
     node_to: int
     canvas_id: int
+    strength: float
 
 # args
 verbose = False
@@ -43,33 +44,8 @@ canvas = tkinter.Canvas(root, width=2000, height=2000, background="#FFFFFF")
 canvas.pack()
 
 # graph
-adj_matrix = []
 nodes = []
 lines = []
-
-def graph_input(nodes, edges):
-    adj_matrix = []
-
-    for i in range(len(nodes)):
-        temp = []
-        for j in range(len(nodes)):
-            temp.append(0)
-        adj_matrix.append(temp)
-
-    for i in range(0, len(edges)):
-        u = edges[i][0]
-        v = edges[i][1]
-        if verbose:
-            print(f"i = {i}, u = {u}, v = {v}")
-
-        adj_matrix[v][u] = adj_matrix[u][v] = 0.1
-
-    if verbose:
-        print("adjacency matrix is : ")
-        for i in range(len(nodes)):
-            print(adj_matrix[i])
-
-    return adj_matrix
 
 
 def move_nodes():
@@ -122,19 +98,29 @@ def hooke_force(coords_i, coords_j, adjacency_value): #attractive force
     return [force * distance_x, force * distance_y]
 
 
+def connection_strength(i, j):
+    for edge in lines:
+        if edge.node_from == i and edge.node_to == j:
+            return edge.strength
+        if edge.node_from == j and edge.node_to == i:
+            return edge.strength
+    return 0.0
+
+
 def move(time):
     e_kinetic = [0.0, 0.0]
-    for i in range(len(adj_matrix)):
+    for i in range(len(nodes)):
         if not nodes[i].fixed:
             force_x = 0.0
             force_y = 0.0
-            for j in range(len(adj_matrix)):
+            for j in range(len(nodes)):
                 if i != j:
                     force = []
-                    if adj_matrix[i][j] == 0.0: # nodes not connected
+                    con_strength = connection_strength(i, j)
+                    if con_strength == 0.0:
                         force = coulomb_force(nodes[i].coords, nodes[j].coords)
                     else:
-                        force = hooke_force(nodes[i].coords, nodes[j].coords, adj_matrix[i][j])
+                        force = hooke_force(nodes[i].coords, nodes[j].coords, con_strength)
                     force_x += force[0]
                     force_y += force[1]
             force_x = force_x + wind * math.e ** (-time / 100) + wind / 100
@@ -149,10 +135,10 @@ def move(time):
         e_kinetic_total = math.sqrt(e_kinetic[0] * e_kinetic[0] + e_kinetic[1] * e_kinetic[1])
         print(f"total kinetic energy: {e_kinetic_total}")
 
-    for i in range(len(adj_matrix)):
-        nodes[i].coords = (
-            nodes[i].coords[0] + nodes[i].velocity[0] * delta_t,
-            nodes[i].coords[1] + nodes[i].velocity[1] * delta_t
+    for node in nodes:
+        node.coords = (
+            node.coords[0] + node.velocity[0] * delta_t,
+            node.coords[1] + node.velocity[1] * delta_t
         )
 
     move_nodes()
@@ -184,7 +170,6 @@ if __name__ == '__main__':
         try:
             # parse yaml
             yml = yaml.safe_load(f)
-            adj_matrix = graph_input(yml["nodes"], yml["edges"])
 
             # draw nodes
             max_node = max(
@@ -213,7 +198,8 @@ if __name__ == '__main__':
                 lines.append(Line(
                     node_from=edge[0],
                     node_to=edge[1],
-                    canvas_id=canvas.create_line(0, 0, 0, 0, arrow=tkinter.LAST)
+                    canvas_id=canvas.create_line(0, 0, 0, 0, arrow=tkinter.LAST),
+                    strength=0.1
                 ))
 
             # begin canvas main loop
