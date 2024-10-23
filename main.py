@@ -188,9 +188,9 @@ if __name__ == '__main__':
 
             # draw nodes
             max_node = max(
-                max([node["id"] for node in yml["nodes"]]),
-                max([edge[0] for edge in yml["edges"]]),
-                max([edge[1] for edge in yml["edges"]]) 
+                max([node["id"] for node in yml.get("nodes", [0])]),
+                max([edge[0] for edge in yml.get("edges", [[0,0]])]),
+                max([edge[1] for edge in yml.get("edges", [[0,0]])]) 
             )
             nodes = [Node(
                 coords=(random.random(), random.random()),
@@ -199,7 +199,7 @@ if __name__ == '__main__':
                 label_canvas_id=canvas.create_text(0, 0, text=str(i)),
                 fixed=False
             ) for i in range(max_node + 1)]
-            for node in yml["nodes"]: # override defaults
+            for node in yml.get("nodes", []): # override defaults
                 nodes[node["id"]] = Node(
                     coords=(random.random(), random.random()),
                     velocity=(0.0, 0.0),
@@ -209,7 +209,7 @@ if __name__ == '__main__':
                 )
 
             # draw lines
-            for edge in yml["edges"]:
+            for edge in yml.get("edges", []):
                 lines.append(Line(
                     node_from=edge[0],
                     node_to=edge[1],
