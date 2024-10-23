@@ -151,7 +151,7 @@ def move(time):
     move_nodes()
     move_lines()
 
-    root.after(1, move)
+    root.after(1, move, time + 1)
 
 
 if __name__ == '__main__':
