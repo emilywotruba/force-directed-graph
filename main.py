@@ -13,6 +13,7 @@ class Node:
     velocity: Tuple[float, float]
     canvas_id: int
     label_canvas_id: int
+    fixed: bool
 
 @dataclass
 class Line:
@@ -118,25 +119,26 @@ def hooke_force(coords_i, coords_j, adjacency_value): #attractive force
 
 def move(time):
     e_kinetic = [0.0, 0.0]
-    for i in range(1, len(adj_matrix)):
-        force_x = 0.0
-        force_y = 0.0
-        for j in range(len(adj_matrix)):
-            if i != j:
-                force = []
-                if adj_matrix[i][j] == 0.0: # nodes not connected
-                    force = coulomb_force(nodes[i].coords, nodes[j].coords)
-                else:
-                    force = hooke_force(nodes[i].coords, nodes[j].coords, adj_matrix[i][j])
-                force_x += force[0]
-                force_y += force[1]
-        force_x = force_x + wind * math.e ** (-time / 100) + wind / 100
-        nodes[i].velocity = (
-            (nodes[i].velocity[0] + alpha * force_x * delta_t) * eta,
-            (nodes[i].velocity[1] + alpha * force_y * delta_t) * eta
-        )
-        e_kinetic[0] = e_kinetic[0] + alpha * (nodes[i].velocity[0] ** 2)
-        e_kinetic[1] = e_kinetic[1] + alpha * (nodes[i].velocity[1] ** 2)
+    for i in range(len(adj_matrix)):
+        if not nodes[i].fixed:
+            force_x = 0.0
+            force_y = 0.0
+            for j in range(len(adj_matrix)):
+                if i != j:
+                    force = []
+                    if adj_matrix[i][j] == 0.0: # nodes not connected
+                        force = coulomb_force(nodes[i].coords, nodes[j].coords)
+                    else:
+                        force = hooke_force(nodes[i].coords, nodes[j].coords, adj_matrix[i][j])
+                    force_x += force[0]
+                    force_y += force[1]
+            force_x = force_x + wind * math.e ** (-time / 100) + wind / 100
+            nodes[i].velocity = (
+                (nodes[i].velocity[0] + alpha * force_x * delta_t) * eta,
+                (nodes[i].velocity[1] + alpha * force_y * delta_t) * eta
+            )
+            e_kinetic[0] = e_kinetic[0] + alpha * (nodes[i].velocity[0] ** 2)
+            e_kinetic[1] = e_kinetic[1] + alpha * (nodes[i].velocity[1] ** 2)
 
     e_kinetic_total = math.sqrt(e_kinetic[0] * e_kinetic[0] + e_kinetic[1] * e_kinetic[1])
     print(f"total kinetic energy: {e_kinetic_total}")
@@ -168,7 +170,8 @@ if __name__ == '__main__':
                     coords=(random.random(), random.random()),
                     velocity=(0.0, 0.0),
                     canvas_id=canvas.create_oval(0, 0, 0, 0, fill=node.get("color", "red")),
-                    label_canvas_id=canvas.create_text(0, 0, text=node.get("name", str(node["id"])))
+                    label_canvas_id=canvas.create_text(0, 0, text=node.get("name", str(node["id"]))),
+                    fixed=node.get("fixed", False)
                 )
 
             # draw lines
