@@ -213,7 +213,7 @@ if __name__ == '__main__':
                 lines.append(Line(
                     node_from=edge[0],
                     node_to=edge[1],
-                    canvas_id=canvas.create_line(0, 0, 0, 0)
+                    canvas_id=canvas.create_line(0, 0, 0, 0, arrow=tkinter.LAST)
                 ))
 
             # begin canvas main loop
