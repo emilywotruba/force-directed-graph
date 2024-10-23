@@ -164,8 +164,19 @@ if __name__ == '__main__':
             adj_matrix = graph_input(yml["nodes"], yml["edges"])
 
             # draw nodes
-            nodes = [None for i in range(max([node["id"] for node in yml["nodes"]])+1)]
-            for node in yml["nodes"]:
+            max_node = max(
+                max([node["id"] for node in yml["nodes"]]),
+                max([edge[0] for edge in yml["edges"]]),
+                max([edge[1] for edge in yml["edges"]]) 
+            )
+            nodes = [Node(
+                coords=(random.random(), random.random()),
+                velocity=(0.0, 0.0),
+                canvas_id=canvas.create_oval(0, 0, 0, 0, fill="red"),
+                label_canvas_id=canvas.create_text(0, 0, text=str(i)),
+                fixed=False
+            ) for i in range(max_node + 1)]
+            for node in yml["nodes"]: # override defaults
                 nodes[node["id"]] = Node(
                     coords=(random.random(), random.random()),
                     velocity=(0.0, 0.0),
