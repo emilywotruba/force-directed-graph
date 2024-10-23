@@ -86,14 +86,14 @@ def coulomb_force(coords_i, coords_j):  #repulsive force
     return [-force * distance_x, -force * distance_y]
 
 
-def hooke_force(coords_i, coords_j, adjacency_value): #attractive force
+def hooke_force(coords_i, coords_j, strength): #attractive force
     distance_x = coords_j[0] - coords_i[0]
     distance_y = coords_j[1] - coords_i[1]
     distance = math.sqrt(
         distance_x * distance_x + 
         distance_y * distance_y
     )
-    distance_delta = distance - adjacency_value
+    distance_delta = distance - strength
     force = spring_characteristic * distance_delta / distance
     return [force * distance_x, force * distance_y]
 
